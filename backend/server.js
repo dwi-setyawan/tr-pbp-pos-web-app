@@ -1,5 +1,5 @@
 import express from "express";
-import mongoose from "mongoose";
+import { Sequelize } from "sequelize";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
@@ -33,14 +33,33 @@ app.get("/", (req, res) => {
 // app.use("/api/products", productsRoutes);
 // app.use("/api/orders", orderRoutes);
 
-mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() =>{
-        console.log("database berhasil terhubung");
-        app.listen(process.env.PORT, () =>{
-            console.log(`Server POS berjalan di http://localhost:${process.env.PORT}`);
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 3307,
+        dialect: "mysql",
+        logging: false,
+    }
+);
+
+async function startServer() {
+    try {
+        await sequelize.authenticate();
+        console.log("Database MySQL berhasil terhubung");
+
+        await sequelize.sync({ alter: true });
+        console.log("semua tabel database berhasil disinkronisasi.");
+
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+            console.log(`Server POS berjalan di http://localhost:${PORT}`);
         });
-    })
-    .catch((error) => {
-        console.error("Tidak dapat terhubung dengan MongoDB", error.message);
-    });
+    } catch (error){
+        console.error("Gagal terhubung dengan database:", error.message);
+    }
+}
+
+startServer()
