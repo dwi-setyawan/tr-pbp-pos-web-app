@@ -1,30 +1,9 @@
-import mongoose from 'mongoose';
+import express from "express";
+import { register, login } from "../controllers/authController.js";
 
-const userSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: true
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true
-        },
-        password: {
-            type: String,
-            required: true
-        },
-        role: {
-            type: String,
-            enum: ['kasir', 'admin', 'owner'],
-            default: 'kasir'
-        }
-    },
-    {
-        timestamps: true
-    }    
-);
+const router = express.Router();
 
-export default mongoose.model('User', userSchema);
+router.post("/register", register);
+router.post("/login", login);
 
+export default router;

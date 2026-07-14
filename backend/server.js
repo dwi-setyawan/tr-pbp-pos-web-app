@@ -1,15 +1,18 @@
 import express from "express";
-import { Sequelize } from "sequelize";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import db from "./config/database.js";
+
 
 //buat route
-// import authRoutes from "./routes/authRoutes.js"
-import { error } from "console";
-// import productRoutes from "./routes/productRoutes.js";
-// import orderRoutes from "./routes/orderRoutes.js";
+import authRoutes from "./routes/authRoutes.js"
+import productRoutes from "./routes/productRoutes.js";
+
+// buat middleware handling error
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+
 
 dotenv.config();
 
@@ -20,6 +23,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
@@ -29,28 +33,21 @@ app.get("/", (req, res) => {
 });
 
 ///hubungkan route ke express
-// app.use("/api/auth", authRoutes);
-// app.use("/api/products", productsRoutes);
-// app.use("/api/orders", orderRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 
-const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
-    {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT || 3307,
-        dialect: "mysql",
-        logging: false,
-    }
-);
+// middleware error
+app.use(notFound);
+app.use(errorHandler);
+
+
 
 async function startServer() {
     try {
-        await sequelize.authenticate();
+        await db.authenticate();
         console.log("Database MySQL berhasil terhubung");
 
-        await sequelize.sync({ alter: true });
+        await db.sync({ alter: true });
         console.log("semua tabel database berhasil disinkronisasi.");
 
         const PORT = process.env.PORT || 5000;
