@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-espresso: #2b1b14;
+  --color-espresso-light: #3d2a1f;
+  --color-cream: #faf6f0;
+  --color-parchment: #f0e8da;
+  --color-copper: #be6a3a;
+  --color-copper-dark: #9a5228;
+  --color-copper-light: #e0a877;
+  --color-sage: #7a8b69;
+  --color-sage-dark: #5f7050;
+  --color-brick: #b33f3f;
+  --color-ink: #3d2e26;
+  --color-ink-soft: #7a6a5d;
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+  }
+}
+
+/* Perforated / receipt-edge divider used across the app as the signature motif */
+.ticket-edge {
+  position: relative;
+}
+.ticket-edge::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: radial-gradient(
+    circle at 6px 0,
+    var(--color-cream) 4px,
+    transparent 4.5px
+  );
+  background-size: 12px 8px;
+  background-repeat: repeat-x;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-copper-light);
+  border-radius: 999px;
+}
