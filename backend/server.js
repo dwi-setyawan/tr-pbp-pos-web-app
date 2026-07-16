@@ -6,9 +6,11 @@ import { fileURLToPath } from "url";
 import db from "./config/database.js";
 
 
-//buat route
+// buat route
 import authRoutes from "./routes/authRoutes.js"
 import productRoutes from "./routes/productRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+
 
 // buat middleware handling error
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -32,9 +34,10 @@ app.get("/", (req, res) => {
     });
 });
 
-///hubungkan route ke express
+/// hubungkan semua route ke express
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/kasir", userRoutes);
 
 // middleware error
 app.use(notFound);
