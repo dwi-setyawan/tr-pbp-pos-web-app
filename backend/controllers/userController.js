@@ -1,12 +1,13 @@
 /**
  * ============================================
- * TRANSACTION ROUTES
+ * USER CONTROLLER
  * --------------------------------------------
- * Endpoint proses transaksi.
+ * Mengelola data pengguna (Admin & Kasir).
  *
  * Contoh:
- * POST /transactions
- * GET /transactions
- * GET /transactions/:id 
+ * - Tambah Kasir
+ * - Edit Kasir
+ * - Hapus Kasir
+ * - Lihat Data Kasir
  * ============================================
  */

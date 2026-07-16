@@ -1,12 +1,13 @@
 /**
  * ============================================
- * TRANSACTION ROUTES
+ * USER ROUTES
  * --------------------------------------------
- * Endpoint proses transaksi.
+ * Endpoint CRUD Pengguna.
  *
  * Contoh:
- * POST /transactions
- * GET /transactions
- * GET /transactions/:id 
+ * GET /users
+ * POST /users
+ * PUT /users/:id
+ * DELETE /users/:id
  * ============================================
  */

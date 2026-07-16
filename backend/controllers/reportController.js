@@ -1,12 +1,10 @@
 /**
  * ============================================
- * TRANSACTION ROUTES
+ * REPORT CONTROLLER
  * --------------------------------------------
- * Endpoint proses transaksi.
+ * Mengelola laporan penjualan.
  *
- * Contoh:
- * POST /transactions
- * GET /transactions
- * GET /transactions/:id 
+ * - Laporan Harian
+ * - Laporan Penjualan
  * ============================================
  */
