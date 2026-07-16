@@ -1,12 +1,11 @@
 /**
  * ============================================
- * TRANSACTION ROUTES
+ * REPORT ROUTES
  * --------------------------------------------
- * Endpoint proses transaksi.
+ * Endpoint laporan penjualan.
  *
  * Contoh:
- * POST /transactions
- * GET /transactions
- * GET /transactions/:id 
+ * GET /reports/daily
+ * GET /reports/monthly(diganti laporan penjualan kan)
  * ============================================
  */
