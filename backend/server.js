@@ -10,7 +10,7 @@ import db from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js"
 import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 // buat middleware handling error
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -38,6 +38,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/kasir", userRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 // middleware error
 app.use(notFound);
