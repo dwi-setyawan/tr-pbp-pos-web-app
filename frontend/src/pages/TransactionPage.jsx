@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, Minus, Trash2, ShoppingBag, CheckCircle2 } from 'lucide-react';
 
-import { getMenu, addTransaction, adjustStock } from '../lib/db';
+import { getProducts, createTransaction, addTransactionItem, checkoutTransaction } from '../lib/transactionService';
 import { getCurrentUser } from '../lib/auth';
+
+// Backend pakai "coffee"/"non-coffee", tampilan pakai "Kopi"/"Non-Kopi"
+const CATEGORY_MAP = { coffee: 'Kopi', 'non-coffee': 'Non-Kopi' };
 
 const formatRupiah = (value) =>
     new Intl.NumberFormat('id-ID', {
@@ -15,7 +18,22 @@ const CATEGORIES = ['Semua', 'Kopi', 'Non-Kopi'];
 
 const TransactionPage = () => {
     const user = getCurrentUser();
-    const [menu, setMenu] = useState(getMenu());
+    
+    const [menu, setMenu] = useState([]);
+    const loadProducts = async () => {
+        const products = await getProducts();
+        setMenu(
+            products.map((p) => ({
+                ...p,
+                category: CATEGORY_MAP[p.category] || p.category,
+                active: true, // backend belum ada field 'active', anggap semua aktif
+            }))
+        );
+    };
+    useEffect(() => {
+        loadProducts();
+    }, []);
+
     const [category, setCategory] = useState('Semua');
     const [search, setSearch] = useState('');
     const [cart, setCart] = useState([]);
@@ -71,27 +89,38 @@ const TransactionPage = () => {
     const canCheckout =
         cart.length > 0 && (payment !== 'tunai' || Number(cashGiven || 0) >= total);
 
-    const handleCheckout = () => {
-        if (!canCheckout) return;
+const handleCheckout = async () => {
+    if (!canCheckout) return;
 
-        const tx = {
-            items: cart,
-            total,
-            payment,
-            cashierName: user?.name,
-            cashierId: user?.id,
-        };
+    try {
+        const transaction = await createTransaction();
 
-        const updated = addTransaction(tx);
+        for (const item of cart) {
+            await addTransactionItem(transaction.id, item.id, item.qty);
+        }
 
-        cart.forEach((c) => adjustStock(c.id, -c.qty));
-        setMenu(getMenu());
+        const amountPaid = payment === 'tunai' ? Number(cashGiven) : total;
+        const result = await checkoutTransaction(
+            transaction.id,
+            payment === 'tunai' ? 'cash' : 'qris',
+            amountPaid
+        );
 
-        setReceipt(updated[0]);
+        await loadProducts(); // refresh stok terbaru dari backend
+
+        setReceipt({
+            items: cart.map((c) => ({ name: c.name, qty: c.qty, price: c.price })),
+            total: result.totalAmount,
+            payment: result.paymentMethod,
+            createdAt: result.transactionDate,
+        });
         setCart([]);
         setCashGiven('');
         setPayment('tunai');
-    };
+    } catch (err) {
+        alert(err.response?.data?.message || 'Checkout gagal, coba lagi.');
+    }
+};
 
     return (
         <div className="flex h-[calc(100vh-4rem)] gap-6">

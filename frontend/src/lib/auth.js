@@ -1,30 +1,34 @@
-import {
-    findUserByCredentials,
-    getSession,
-    setSession,
-    clearSession,
-} from './db';
+import { loginRequest } from './authService';
 
-export const login = (email, password) => {
-    const user = findUserByCredentials(email, password);
+const SESSION_KEY = 'session';
 
-    if (!user) {
-        throw new Error('Email atau password salah.');
-    }
+// Backend pakai "admin", frontend pakai "owner" — disamakan di sini saja
+const normalizeRole = (backendRole) => (backendRole === 'admin' ? 'owner' : backendRole);
+
+export const login = async (email, password) => {
+    const data = await loginRequest(email, password);
 
     const session = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: normalizeRole(data.user.role),
     };
 
-    setSession(session);
+    localStorage.setItem('token', data.token);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
     return session;
 };
 
 export const logout = () => {
-    clearSession();
+    localStorage.removeItem('token');
+    localStorage.removeItem(SESSION_KEY);
+};
+
+export const getSession = () => {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
 };
 
 export const getCurrentUser = () => getSession();

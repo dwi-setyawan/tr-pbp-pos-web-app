@@ -20,7 +20,7 @@ const LoginPage = () => {
         setForm((current) => ({ ...current, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
 
@@ -30,18 +30,15 @@ const LoginPage = () => {
         }
 
         setIsLoading(true);
-
-        setTimeout(() => {
-            try {
-                const session = login(form.email.trim(), form.password);
-                const target = session.role === 'owner' ? '/dashboard' : '/transaksi';
-                navigate(target, { replace: true });
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        }, 300);
+        try {
+            const session = await login(form.email.trim(), form.password);
+            const target = session.role === 'owner' ? '/dashboard' : '/transaksi';
+            navigate(target, { replace: true });
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Login gagal.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
