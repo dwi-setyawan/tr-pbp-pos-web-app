@@ -1,13 +1,43 @@
 import User from "../models/User.js"; 
 import bcrypt from "bcryptjs";
 
+// CREATE / POST : Menambah akun kasir baru oleh Admin
+export const createCashier = async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: "Nama, email, dan password wajib diisi!" });
+    }
+
+    try {
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) return res.status(400).json({ message: "Email sudah terdaftar!" });
+
+        const salt = await bcrypt.genSalt();
+        const hashPassword = await bcrypt.hash(password, salt);
+
+        const newCashier = await User.create({
+            name,
+            email,
+            password: hashPassword,
+            role: "kasir"
+        });
+
+        res.status(201).json({
+            message: "Akun kasir berhasil ditambahkan!",
+            data: { id: newCashier.id, name: newCashier.name, email: newCashier.email, role: newCashier.role }
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 // READ / GET : Mengambil semua data KASIR
 export const getCashiers = async (req, res) => {
     try {
         const response = await User.findAll({
             attributes: ['id', 'name', 'email', 'role', 'createdAt'],
             where: {
-                role: 'kasir' // memfilter user dengan role kasir
+                role: 'kasir'
             }
         });
         res.status(200).json(response);
@@ -33,7 +63,7 @@ export const getCashierById = async (req, res) => {
     }
 };
 
-// UPDATE / PUT : Mengubah data kasir (Nama, Email, atau Reset Password)
+// UPDATE / PUT : Mengubah data kasir 
 export const updateCashier = async (req, res) => {
     const cashier = await User.findOne({
         where: {
@@ -45,13 +75,13 @@ export const updateCashier = async (req, res) => {
 
     const { name, email, password } = req.body;
     
-    // Logika jika password diubah, maka harus di-hash ulang menggunakan bcrypt
+    // jika password diubah, hashing
     let hashPassword;
     if (password === "" || password === null || password === undefined) {
-        hashPassword = cashier.password; // Pakai password lama jika input kosong
+        hashPassword = cashier.password; 
     } else {
         const salt = await bcrypt.genSalt();
-        hashPassword = await bcrypt.hash(password, salt); // Hash password baru
+        hashPassword = await bcrypt.hash(password, salt);
     }
 
     try {
