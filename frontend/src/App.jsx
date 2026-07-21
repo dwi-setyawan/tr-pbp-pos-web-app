@@ -26,7 +26,7 @@ const App = () => {
                         <Route path="/laporan" element={<ReportPage />} />
                     </Route>
 
-                    <Route element={<ProtectedRoute allowedRoles={['owner', 'kasir']} />}>
+                    <Route element={<ProtectedRoute allowedRoles={['kasir']} />}>
                         <Route path="/transaksi" element={<TransactionPage />} />
                     </Route>
                 </Route>

@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import {
     LayoutGrid,
     Coffee,
@@ -14,7 +14,7 @@ import { logout } from '../lib/auth';
 const NAV_ITEMS = {
     owner: [
         { to: '/dashboard', label: 'Dasbor', icon: LayoutGrid },
-        { to: '/transaksi', label: 'Transaksi', icon: ShoppingCart },
+        // { to: '/transaksi', label: 'Transaksi', icon: ShoppingCart },
         { to: '/menu', label: 'Menu', icon: Coffee },
         { to: '/users', label: 'Pengguna', icon: Users },
         { to: '/laporan', label: 'Laporan', icon: ReceiptText },
@@ -24,8 +24,10 @@ const NAV_ITEMS = {
 
 const AppLayout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const user = getCurrentUser();
     const items = NAV_ITEMS[user?.role] || [];
+    const hideSidebar = location.pathname === '/transaksi';
 
     const handleLogout = () => {
         logout();
