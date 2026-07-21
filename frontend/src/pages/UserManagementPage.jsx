@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 
-import { getUsers, addUser, updateUser, deleteUser } from '../lib/db';
 import api from '../lib/api';
 import { getCurrentUser } from '../lib/auth';
 
@@ -59,6 +58,16 @@ const UserManagementPage = () => {
         event.preventDefault();
         setError('');
 
+        if (!editingId && !form.password) {
+        setError('Password wajib diisi!');
+        return;
+        }
+
+        if (form.password && form.password.length < 6) {
+            setError('Password minimal harus 6 karakter!');
+            return;
+        }
+
         try {
             if (editingId) {
                 const patch = {
@@ -70,12 +79,6 @@ const UserManagementPage = () => {
 
                 await api.put(`/kasir/${editingId}`, patch);
             } else {
-        
-                if (!form.password) {
-                    setError('Password wajib diisi');
-                    return;
-                }
-                
                 await api.post('/kasir', {
                     name: form.name.trim(),
                     email: form.email.trim(),
@@ -98,7 +101,7 @@ const UserManagementPage = () => {
         }
         if (confirm('Hapus pengguna ini?')) {
             try {
-                await api.delete(`/users/${id}`);
+                await api.delete(`/kasir/${id}`);
                 alert('Pengguna berhasil dihapus!');
                 await fetchUsers(); 
             } catch (err) {

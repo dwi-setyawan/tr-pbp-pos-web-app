@@ -55,3 +55,18 @@
   background: var(--color-copper-light);
   border-radius: 999px;
 }
+
+@media print {
+  body * { visibility: hidden; }
+  .printable-receipt, .printable-receipt * { visibility: visible; }
+  .printable-receipt {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    box-shadow: none;
+  }
+  .no-print { display: none !important; }
+  @page { size: auto; margin: 0; }
+}

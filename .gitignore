@@ -4,6 +4,7 @@ backend/node_modules/
 frontend/node_modules/
 uploads/*
 !uploads/.gitkeep
+!uploads/default-product.png
 
 # Environment
 .env

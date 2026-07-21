@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Minus, Trash2, ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingBag, CheckCircle2, QrCode, X, Printer } from 'lucide-react';
 
 import { getProducts, createTransaction, addTransactionItem, checkoutTransaction } from '../lib/transactionService';
 import { getImageUrl } from '../lib/productService';
@@ -16,6 +16,7 @@ const formatRupiah = (value) =>
     }).format(value);
 
 const CATEGORIES = ['Semua', 'Kopi', 'Non-Kopi'];
+const QRIS_DUMMY_URL = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=BREW_COFFEE_QRIS_DUMMY";
 
 const TransactionPage = () => {
     const user = getCurrentUser();
@@ -42,6 +43,7 @@ const TransactionPage = () => {
     const [payment, setPayment] = useState('tunai');
     const [cashGiven, setCashGiven] = useState('');
     const [receipt, setReceipt] = useState(null);
+    const [showQrisModal, setShowQrisModal] = useState(false);
 
     const visibleMenu = menu.filter((item) => {
     const matchesCategory = category === 'Semua' || item.category === category;
@@ -113,17 +115,26 @@ const handleCheckout = async () => {
         await loadProducts(); // refresh stok terbaru dari backend
 
         setReceipt({
+            id: transaction.id || result.id || Date.now(),
             items: cart.map((c) => ({ name: c.name, qty: c.qty, price: c.price })),
-            total: result.totalAmount,
-            payment: result.paymentMethod,
-            createdAt: result.transactionDate,
+            total: result.totalAmount || total,
+            payment: result.paymentMethod || payment,
+            createdAt: result.transactionDate || new Date(),
+            paidAmount: amountPaid,
+            changeAmount: payment === 'tunai' ? (amountPaid - total) : 0
         });
         setCart([]);
         setCashGiven('');
         setPayment('tunai');
+        setShowQrisModal(false);
     } catch (err) {
         alert(err.response?.data?.message || 'Checkout gagal, coba lagi.');
     }
+};
+
+const handlePrint = () => {
+    if (!receipt) return;
+    window.print();
 };
 
     return (
@@ -326,6 +337,18 @@ const handleCheckout = async () => {
                         </div>
                     )}
 
+                    {payment === 'qris' && (
+                        <div className="mb-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowQrisModal(true)}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-copper/30 bg-parchment py-2.5 text-xs font-semibold text-copper transition hover:bg-copper/10"
+                            >
+                                <QrCode size={16} /> Tampilkan Kode QRIS
+                            </button>
+                        </div>
+                    )}
+
                     <button
                         type="button"
                         disabled={!canCheckout}
@@ -337,11 +360,46 @@ const handleCheckout = async () => {
                 </div>
             </div>
 
+            {showQrisModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-espresso/50 px-4">
+                    <div className="w-full max-w-xs rounded-2xl bg-white p-6 text-center shadow-xl">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3 className="font-display font-semibold text-ink">Pembayaran QRIS</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowQrisModal(false)}
+                                className="rounded-lg p-1 text-ink-soft hover:bg-parchment"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <img
+                            src={QRIS_DUMMY_URL}
+                            alt="QRIS Code"
+                            className="mx-auto my-2 rounded-xl border border-ink-soft/10 p-2 shadow-sm"
+                        />
+                        <p className="mt-2 text-xs text-ink-soft">
+                            Scan menggunakan GoPay, OVO, Dana, ShopeePay, atau m-Banking.
+                        </p>
+                        <p className="mt-3 font-mono text-lg font-bold text-copper-dark">
+                            {formatRupiah(total)}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setShowQrisModal(false)}
+                            className="mt-4 w-full rounded-lg bg-espresso py-2.5 text-xs font-semibold text-cream"
+                        >
+                            Tutup &amp; Lanjutkan Pembayaran
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {receipt && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-espresso/50 px-4">
-                    <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                    <div className="printable-receipt w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
                         <div className="mb-4 flex flex-col items-center text-center">
-                            <CheckCircle2 size={40} className="mb-2 text-sage" />
+                            <CheckCircle2 size={40} className="no-print mb-2 text-sage" />
                             <h2 className="font-display text-xl font-semibold text-ink">
                                 Pembayaran Berhasil
                             </h2>
@@ -371,15 +429,36 @@ const handleCheckout = async () => {
                                 <span>Metode</span>
                                 <span className="capitalize">{receipt.payment}</span>
                             </div>
+                            {(receipt.payment === 'cash' || receipt.payment === 'tunai') && (
+                                <>
+                                    <div className="mt-1 flex justify-between text-ink-soft">
+                                        <span>Bayar</span>
+                                        <span>{formatRupiah(receipt.paidAmount)}</span>
+                                    </div>
+                                    <div className="mt-1 flex justify-between text-ink-soft">
+                                        <span>Kembali</span>
+                                        <span>{formatRupiah(receipt.changeAmount)}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setReceipt(null)}
-                            className="mt-5 w-full rounded-lg bg-copper px-4 py-2.5 font-semibold text-cream transition hover:bg-copper-dark"
-                        >
-                            Transaksi Baru
-                        </button>
+                        <div className="no-print mt-5 flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handlePrint}
+                                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-soft/25 py-2.5 font-semibold text-ink-soft transition hover:bg-parchment"
+                            >
+                                <Printer size={16} /> Cetak
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setReceipt(null)}
+                                className="flex-1 rounded-lg bg-copper px-4 py-2.5 font-semibold text-cream transition hover:bg-copper-dark"
+                            >
+                                Transaksi Baru
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

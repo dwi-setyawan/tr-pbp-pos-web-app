@@ -2,6 +2,15 @@ import Product from "../models/Product.js";
 import fs from "fs";
 import path from "path";
 
+const removeUploadedFile = (file) => {
+    if (file) {
+        const filePath = path.join("uploads", file.filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+    }
+};
+
 // Product aktif sj
 export const getProducts = async (req, res) => {
     try {
@@ -36,11 +45,22 @@ export const getProductById = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const { name, price, stock, category } = req.body;
-        
+        const imageName = req.file ? req.file.filename : null;
         // Ambil nama gambar 
-        let imageName = null;
-        if (req.file) {
-            imageName = req.file.filename;
+        const numericPrice = Number(price);
+        if (isNaN(numericPrice) || numericPrice < 1000) {
+            removeUploadedFile(req.file);
+            return res.status(400).json({ 
+                message: "Harga produk minimal harus Rp 1.000 dan tidak boleh minus!" 
+            });
+        }
+
+        const numericStock = Number(stock);
+        if (isNaN(numericStock) || numericStock < 0) {
+            removeUploadedFile(req.file);
+            return res.status(400).json({ 
+                message: "Stok produk tidak boleh minus!" 
+            });
         }
 
         const newProduct = await Product.create({
@@ -57,6 +77,7 @@ export const createProduct = async (req, res) => {
             data: newProduct
         });
     } catch (error) {
+        removeUploadedFile(req.file);
         res.status(400).json({ message: error.message });
     }
 };
@@ -67,10 +88,33 @@ export const updateProduct = async (req, res) => {
         const product = await Product.findByPk(req.params.id);
 
         if (!product) {
+            removeUploadedFile(req.file);
             return res.status(404).json({ message: "Produk tidak ditemukan" });
         }
 
         const { name, price, stock, category, isActive } = req.body;
+
+        if (price !== undefined) {
+            const numericPrice = Number(price);
+            if (isNaN(numericPrice) || numericPrice < 1000) {
+                removeUploadedFile(req.file);
+                return res.status(400).json({ 
+                    message: "Harga produk minimal harus Rp 1.000 dan tidak boleh minus!" 
+                });
+            }
+            product.price = numericPrice;
+        }
+
+        if (stock !== undefined) {
+            const numericStock = Number(stock);
+            if (isNaN(numericStock) || numericStock < 0) {
+                removeUploadedFile(req.file);
+                return res.status(400).json({ 
+                    message: "Stok produk tidak boleh minus!" 
+                });
+            }
+            product.stock = numericStock;
+        }
 
         if (req.file) {
             if (product.image) {
@@ -84,8 +128,6 @@ export const updateProduct = async (req, res) => {
         }
 
         if (name) product.name = name;
-        if (price) product.price = price;
-        if (stock !== undefined) product.stock = stock;
         if (category) product.category = category;
         if (isActive !== undefined) product.isActive = isActive;
 

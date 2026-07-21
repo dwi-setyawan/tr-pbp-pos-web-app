@@ -1,52 +1,45 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { ReceiptText } from 'lucide-react';
-
-import { getTransactions } from '../lib/db';
+import api from '../lib/api';
 
 const formatRupiah = (value) =>
     new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         maximumFractionDigits: 0,
-    }).format(value);
-
-const toDateInputValue = (date) => date.toISOString().slice(0, 10);
+    }).format(value || 0);
 
 const ReportPage = () => {
-    const transactions = getTransactions();
-
-    const today = toDateInputValue(new Date());
-    const weekAgo = toDateInputValue(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
-
-    const [startDate, setStartDate] = useState(weekAgo);
-    const [endDate, setEndDate] = useState(today);
     const [expandedId, setExpandedId] = useState(null);
 
-    const filtered = useMemo(() => {
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
+    const [cards, setCards] = useState({
+        totalPendapatan: 0,
+        totalTransactions: 0,
+        totalItemsSold: 0,
+        averagePerTransaction: 0,
+    });
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-        return transactions.filter((t) => {
-            const created = new Date(t.createdAt);
-            return created >= start && created <= end;
-        });
-    }, [transactions, startDate, endDate]);
+    useEffect(() => {
+        fetchDailyReport();
+    }, []);
 
-    const summary = useMemo(() => {
-        const totalRevenue = filtered.reduce((sum, t) => sum + t.total, 0);
-        const totalItems = filtered.reduce(
-            (sum, t) => sum + t.items.reduce((s, i) => s + i.qty, 0),
-            0
-        );
-        return {
-            totalRevenue,
-            totalTransactions: filtered.length,
-            totalItems,
-            avgTicket: filtered.length ? totalRevenue / filtered.length : 0,
-        };
-    }, [filtered]);
+    const fetchDailyReport = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/reports');
+
+            if (response.data.success) {
+                setCards(response.data.data.cards);
+                setTransactions(response.data.data.table);
+            }
+        } catch (err) {
+            console.error('Gagal mengambil laporan harian:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div>
@@ -55,61 +48,33 @@ const ReportPage = () => {
                     Histori &amp; Laporan Penjualan
                 </h1>
                 <p className="mt-1 text-ink-soft">
-                    Tinjau transaksi dan performa penjualan berdasarkan rentang tanggal.
+                    Tinjau transaksi dan performa penjualan hari ini.
                 </p>
-            </div>
-
-            <div className="mb-6 flex flex-wrap items-end gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-soft/10">
-                <div>
-                    <label className="mb-1.5 block text-sm font-semibold text-ink">
-                        Dari Tanggal
-                    </label>
-                    <input
-                        type="date"
-                        value={startDate}
-                        max={endDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="rounded-lg border border-ink-soft/25 px-3 py-2 text-sm outline-none focus:border-copper focus:ring-4 focus:ring-copper/15"
-                    />
-                </div>
-                <div>
-                    <label className="mb-1.5 block text-sm font-semibold text-ink">
-                        Sampai Tanggal
-                    </label>
-                    <input
-                        type="date"
-                        value={endDate}
-                        min={startDate}
-                        max={today}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-lg border border-ink-soft/25 px-3 py-2 text-sm outline-none focus:border-copper focus:ring-4 focus:ring-copper/15"
-                    />
-                </div>
             </div>
 
             <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-soft/10">
                     <p className="text-sm font-medium text-ink-soft">Total Pendapatan</p>
                     <p className="mt-1 font-display text-2xl font-semibold text-ink">
-                        {formatRupiah(summary.totalRevenue)}
+                        {formatRupiah(cards.totalPendapatan)}
                     </p>
                 </div>
                 <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-soft/10">
                     <p className="text-sm font-medium text-ink-soft">Jumlah Transaksi</p>
                     <p className="mt-1 font-display text-2xl font-semibold text-ink">
-                        {summary.totalTransactions}
+                        {cards.totalTransactions}
                     </p>
                 </div>
                 <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-soft/10">
                     <p className="text-sm font-medium text-ink-soft">Item Terjual</p>
                     <p className="mt-1 font-display text-2xl font-semibold text-ink">
-                        {summary.totalItems}
+                        {cards.totalItemsSold}
                     </p>
                 </div>
                 <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink-soft/10">
                     <p className="text-sm font-medium text-ink-soft">Rata-rata / Transaksi</p>
                     <p className="mt-1 font-display text-2xl font-semibold text-ink">
-                        {formatRupiah(summary.avgTicket)}
+                        {formatRupiah(cards.averagePerTransaction)}
                     </p>
                 </div>
             </div>
@@ -126,7 +91,7 @@ const ReportPage = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-soft/10">
-                        {filtered.map((t) => (
+                        {transactions.map((t) => (
                             <Fragment key={t.id}>
                                 <tr
                                     onClick={() =>
@@ -135,17 +100,17 @@ const ReportPage = () => {
                                     className="cursor-pointer hover:bg-parchment/40"
                                 >
                                     <td className="px-6 py-3.5 text-ink">
-                                        {new Date(t.createdAt).toLocaleString('id-ID', {
+                                        {new Date(t.waktu).toLocaleString('id-ID', {
                                             dateStyle: 'medium',
                                             timeStyle: 'short',
                                         })}
                                     </td>
-                                    <td className="px-6 py-3.5 text-ink-soft">{t.cashierName}</td>
+                                    <td className="px-6 py-3.5 text-ink-soft">{t.kasir}</td>
                                     <td className="px-6 py-3.5 text-ink-soft">
-                                        {t.items.reduce((s, i) => s + i.qty, 0)} item
+                                        {t.itemCountString}
                                     </td>
                                     <td className="px-6 py-3.5 text-ink-soft capitalize">
-                                        {t.payment}
+                                        {t.pembayaran}
                                     </td>
                                     <td className="px-6 py-3.5 text-right font-mono font-semibold text-ink">
                                         {formatRupiah(t.total)}
@@ -155,16 +120,14 @@ const ReportPage = () => {
                                     <tr className="bg-parchment/30">
                                         <td colSpan={5} className="px-6 py-4">
                                             <div className="space-y-1.5">
-                                                {t.items.map((item, idx) => (
+                                                {t.products && t.products.map((item, idx) => (
                                                     <div
                                                         key={idx}
                                                         className="flex justify-between text-sm text-ink-soft"
                                                     >
-                                                        <span>
-                                                            {item.qty}x {item.name}
-                                                        </span>
+                                                        <span>{item.detailString}</span>
                                                         <span className="font-mono">
-                                                            {formatRupiah(item.qty * item.price)}
+                                                            {formatRupiah(item.subtotal)}
                                                         </span>
                                                     </div>
                                                 ))}
@@ -175,14 +138,14 @@ const ReportPage = () => {
                             </Fragment>
                         ))}
 
-                        {filtered.length === 0 && (
+                        {!loading && transactions.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-6 py-14 text-center text-ink-soft">
                                     <ReceiptText
                                         size={32}
                                         className="mx-auto mb-3 text-ink-soft/40"
                                     />
-                                    Tidak ada transaksi pada rentang tanggal ini.
+                                    Belum ada transaksi pada hari ini.
                                 </td>
                             </tr>
                         )}

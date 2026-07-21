@@ -404,7 +404,7 @@ const MenuManagementPage = () => {
                                         name="price"
                                         value={form.price}
                                         onChange={handleChange}
-                                        min="0"
+                                        min="1000"
                                         required
                                         className="w-full rounded-lg border border-ink-soft/25 px-3 py-2.5 outline-none focus:border-copper focus:ring-4 focus:ring-copper/15"
                                     />
