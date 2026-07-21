@@ -23,6 +23,14 @@ const Product = db.define("Product", {
     category: {
         type: DataTypes.ENUM("coffee", "non-coffee"),
         defaultValue: "coffee",
+    },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true, 
     }
 }, {
     timestamps: true,

@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import db from "./config/database.js";
+import bcrypt from "bcryptjs";
+import User from "./models/User.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 
 // buat route
@@ -25,8 +28,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
     res.json({
@@ -39,6 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/kasir", userRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/reports", reportRoutes);
 
 // middleware error
 app.use(notFound);
@@ -51,8 +56,23 @@ async function startServer() {
         await db.authenticate();
         console.log("Database MySQL berhasil terhubung");
 
-        await db.sync({ alter: true });
+        await db.sync( {alter: true });
         console.log("semua tabel database berhasil disinkronisasi.");
+
+        const adminExist = await User.findOne({ where: { role: 'admin' } });
+        if (!adminExist) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash("password123", salt);
+
+            await User.create({
+                id: 1, 
+                name: "Super Admin",
+                email: "admin@brew.com",
+                password: hashedPassword,
+                role: "admin"
+            });
+        }
+
 
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, () => {
