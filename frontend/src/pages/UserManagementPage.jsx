@@ -1,18 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 
 import { getUsers, addUser, updateUser, deleteUser } from '../lib/db';
+import api from '../lib/api';
 import { getCurrentUser } from '../lib/auth';
 
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'kasir' };
 
 const UserManagementPage = () => {
     const currentUser = getCurrentUser();
-    const [users, setUsers] = useState(getUsers());
+    const [users, setUsers] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/kasir');
+            if (Array.isArray(response.data)) {
+            setUsers(response.data);
+            } else {
+                setUsers([]); 
+            }
+        } catch (err) {
+            console.error("Gagal mengambil data user:", err);
+            setUsers([]); 
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
     const openCreate = () => {
         setEditingId(null);
@@ -33,54 +55,55 @@ const UserManagementPage = () => {
         setForm((current) => ({ ...current, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
 
-        const emailTaken = users.some(
-            (u) =>
-                u.email.toLowerCase() === form.email.trim().toLowerCase() &&
-                u.id !== editingId
-        );
+        try {
+            if (editingId) {
+                const patch = {
+                    name: form.name.trim(),
+                    email: form.email.trim(),
+                    role: form.role,
+                };
+                if (form.password) patch.password = form.password;
 
-        if (emailTaken) {
-            setError('Email sudah digunakan pengguna lain.');
-            return;
-        }
-
-        if (editingId) {
-            const patch = {
-                name: form.name.trim(),
-                email: form.email.trim(),
-                role: form.role,
-            };
-            if (form.password) patch.password = form.password;
-            setUsers(updateUser(editingId, patch));
-        } else {
-            if (!form.password) {
-                setError('Password wajib diisi untuk pengguna baru.');
-                return;
-            }
-            setUsers(
-                addUser({
+                await api.put(`/kasir/${editingId}`, patch);
+            } else {
+        
+                if (!form.password) {
+                    setError('Password wajib diisi');
+                    return;
+                }
+                
+                await api.post('/kasir', {
                     name: form.name.trim(),
                     email: form.email.trim(),
                     password: form.password,
                     role: form.role,
-                })
-            );
-        }
+                });
+            }
 
-        setIsModalOpen(false);
+            await fetchUsers();
+            setIsModalOpen(false);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Gagal menyimpan data ke database.');
+        }
     };
 
-    const handleDelete = (id) => {
-        if (id === currentUser.id) {
+    const handleDelete = async (id) => {
+        if (id === currentUser?.id) {
             alert('Anda tidak bisa menghapus akun sendiri.');
             return;
         }
         if (confirm('Hapus pengguna ini?')) {
-            setUsers(deleteUser(id));
+            try {
+                await api.delete(`/users/${id}`);
+                alert('Pengguna berhasil dihapus!');
+                await fetchUsers(); 
+            } catch (err) {
+                alert(err.response?.data?.message || 'Gagal menghapus pengguna.');
+            }
         }
     };
 
@@ -119,7 +142,7 @@ const UserManagementPage = () => {
                             <tr key={user.id} className="hover:bg-parchment/40">
                                 <td className="px-6 py-3.5 font-medium text-ink">
                                     {user.name}
-                                    {user.id === currentUser.id && (
+                                    {user.id === currentUser?.id && (
                                         <span className="ml-2 rounded-full bg-copper/15 px-2 py-0.5 text-xs font-medium text-copper-dark">
                                             Anda
                                         </span>
@@ -134,7 +157,7 @@ const UserManagementPage = () => {
                                                 : 'bg-sage/15 text-sage-dark'
                                         }`}
                                     >
-                                        {user.role === 'owner' ? 'Owner' : 'Kasir'}
+                                       {user.role === 'owner' || user.role === 'admin' ? 'Owner' : 'Kasir'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-3.5">
@@ -232,15 +255,12 @@ const UserManagementPage = () => {
                                 <label className="mb-1.5 block text-sm font-semibold text-ink">
                                     Peran
                                 </label>
-                                <select
-                                    name="role"
-                                    value={form.role}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border border-ink-soft/25 bg-white px-3 py-2.5 outline-none focus:border-copper focus:ring-4 focus:ring-copper/15"
-                                >
-                                    <option value="kasir">Kasir</option>
-                                    <option value="owner">Owner</option>
-                                </select>
+                                <input
+                                    type="text"
+                                    value="Kasir"
+                                    disabled
+                                    className="w-full rounded-lg border border-ink-soft/25 bg-parchment/50 px-3 py-2.5 font-medium text-ink-soft cursor-not-allowed outline-none"
+                                />
                             </div>
 
                             <div className="flex gap-3 pt-2">

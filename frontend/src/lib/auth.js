@@ -2,7 +2,6 @@ import { loginRequest } from './authService';
 
 const SESSION_KEY = 'session';
 
-// Backend pakai "admin", frontend pakai "owner" — disamakan di sini saja
 const normalizeRole = (backendRole) => (backendRole === 'admin' ? 'owner' : backendRole);
 
 export const login = async (email, password) => {
@@ -15,19 +14,25 @@ export const login = async (email, password) => {
         role: normalizeRole(data.user.role),
     };
 
-    localStorage.setItem('token', data.token);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    // localStorage.setItem('token', data.token);
+    // localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
     return session;
 };
 
 export const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem(SESSION_KEY);
+    // localStorage.removeItem('token');
+    // localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem(SESSION_KEY);
 };
 
 export const getSession = () => {
-    const raw = localStorage.getItem(SESSION_KEY);
+    // const raw = localStorage.getItem(SESSION_KEY);
+    const raw = sessionStorage.getItem(SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
 };
 
