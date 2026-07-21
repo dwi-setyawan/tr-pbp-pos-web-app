@@ -163,7 +163,7 @@ const handleCheckout = async () => {
                     </div>
                 </div>
 
-                <div className="scrollbar-thin grid flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto p-2 pb-2 pr-1 sm:grid-cols-3 xl:grid-cols-4">
+                <div className="scrollbar-thin grid flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto p-2 pb-2 pr-1 sm:grid-cols-3 xl:grid-cols-6">
                     {visibleMenu.map((item) => {
                         const inCart = cart.find((c) => c.id === item.id)?.qty || 0;
                         const soldOut = item.stock <= 0;
@@ -175,7 +175,7 @@ const handleCheckout = async () => {
                                 type="button"
                                 disabled={soldOut || inCart >= item.stock}
                                 onClick={() => addToCart(item)}
-                                className="group relative flex flex-col items-start rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-ink-soft/10 transition hover:shadow-md hover:ring-copper/30 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="group relative flex flex-col items-start rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-ink-soft/10 transition hover:shadow-md hover:ring-copper/30 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {inCart > 0 && (
                                     <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-copper text-xs font-bold text-cream shadow">
@@ -186,7 +186,7 @@ const handleCheckout = async () => {
                                     <img
                                         src={imageUrl}
                                         alt={item.name}
-                                        className="h-16 w-full rounded-lg object-cover"
+                                        className="aspect-square w-full rounded-xl object-cover border border-ink-soft/10"
                                     />
                                 ) : (
                                     <span className="flex h-16 w-full items-center justify-center rounded-lg bg-parchment text-3xl">
