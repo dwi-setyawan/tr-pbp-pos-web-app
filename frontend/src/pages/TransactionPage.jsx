@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus, Minus, Trash2, ShoppingBag, CheckCircle2 } from 'lucide-react';
 
 import { getProducts, createTransaction, addTransactionItem, checkoutTransaction } from '../lib/transactionService';
+import { getImageUrl } from '../lib/productService';
 import { getCurrentUser } from '../lib/auth';
 
 // Backend pakai "coffee"/"non-coffee", tampilan pakai "Kopi"/"Non-Kopi"
@@ -26,7 +27,8 @@ const TransactionPage = () => {
             products.map((p) => ({
                 ...p,
                 category: CATEGORY_MAP[p.category] || p.category,
-                active: true, // backend belum ada field 'active', anggap semua aktif
+                isActive: p.isActive !== undefined ? p.isActive : true,
+                image: p.image,
             }))
         );
     };
@@ -42,9 +44,11 @@ const TransactionPage = () => {
     const [receipt, setReceipt] = useState(null);
 
     const visibleMenu = menu.filter((item) => {
-        const matchesCategory = category === 'Semua' || item.category === category;
-        const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-        return matchesCategory && matchesSearch && item.active;
+    const matchesCategory = category === 'Semua' || item.category === category;
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+
+    // Backend memakai field isActive
+    return matchesCategory && matchesSearch && item.isActive;
     });
 
     const addToCart = (item) => {
@@ -163,6 +167,7 @@ const handleCheckout = async () => {
                     {visibleMenu.map((item) => {
                         const inCart = cart.find((c) => c.id === item.id)?.qty || 0;
                         const soldOut = item.stock <= 0;
+                        const imageUrl = getImageUrl(item.image);
 
                         return (
                             <button
@@ -177,9 +182,9 @@ const handleCheckout = async () => {
                                         {inCart}
                                     </span>
                                 )}
-                                {item.image ? (
+                                {imageUrl ? (
                                     <img
-                                        src={item.image}
+                                        src={imageUrl}
                                         alt={item.name}
                                         className="h-16 w-full rounded-lg object-cover"
                                     />

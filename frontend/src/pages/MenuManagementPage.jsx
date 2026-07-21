@@ -1,7 +1,13 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Plus, Pencil, Trash2, X, ImagePlus, ImageOff } from 'lucide-react';
 
-import { getMenu, addMenuItem, updateMenuItem, deleteMenuItem } from '../lib/db';
+import {
+    getProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getImageUrl,
+} from '../lib/productService';
 import { fileToCompressedDataUrl } from '../lib/image';
 
 const formatRupiah = (value) =>
@@ -11,6 +17,16 @@ const formatRupiah = (value) =>
         maximumFractionDigits: 0,
     }).format(value);
 
+const CATEGORY_DISPLAY = {
+    coffee: 'Kopi',
+    'non-coffee': 'Non-Kopi',
+};
+
+const CATEGORY_VALUE = {
+    Kopi: 'coffee',
+    'Non-Kopi': 'non-coffee',
+};
+
 const EMPTY_FORM = {
     name: '',
     category: 'Kopi',
@@ -18,18 +34,39 @@ const EMPTY_FORM = {
     stock: '',
     emoji: '☕',
     image: null,
-    active: true,
+    isActive: true,
 };
 
 const MenuManagementPage = () => {
-    const [menu, setMenu] = useState(getMenu());
+    const [menu, setMenu] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
+    const [imageFile, setImageFile] = useState(null);
     const [search, setSearch] = useState('');
     const [imageError, setImageError] = useState('');
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const fileInputRef = useRef(null);
+
+    const loadMenu = async () => {
+        try {
+            const products = await getProducts();
+            setMenu(
+                products.map((item) => ({
+                    ...item,
+                    category: CATEGORY_DISPLAY[item.category] || item.category,
+                    isActive: item.isActive ?? true,
+                    image: getImageUrl(item.image),
+                }))
+            );
+        } catch (err) {
+            console.error('Gagal memuat produk:', err);
+        }
+    };
+
+    useEffect(() => {
+        loadMenu();
+    }, []);
 
     const filtered = menu.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
@@ -51,8 +88,9 @@ const MenuManagementPage = () => {
             stock: item.stock,
             emoji: item.emoji,
             image: item.image || null,
-            active: item.active,
+            isActive: item.isActive,
         });
+        setImageFile(null);
         setImageError('');
         setIsModalOpen(true);
     };
@@ -68,6 +106,7 @@ const MenuManagementPage = () => {
         try {
             const dataUrl = await fileToCompressedDataUrl(file);
             setForm((current) => ({ ...current, image: dataUrl }));
+            setImageFile(file);
         } catch (err) {
             setImageError(err.message);
         } finally {
@@ -77,6 +116,7 @@ const MenuManagementPage = () => {
 
     const handleRemoveImage = () => {
         setForm((current) => ({ ...current, image: null }));
+        setImageFile(null);
     };
 
     const handleChange = (event) => {
@@ -87,33 +127,43 @@ const MenuManagementPage = () => {
         }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         const payload = {
             name: form.name.trim(),
-            category: form.category,
+            category: CATEGORY_VALUE[form.category] || form.category,
             price: Number(form.price) || 0,
             stock: Number(form.stock) || 0,
             emoji: form.emoji || '☕',
-            image: form.image || null,
-            active: Boolean(form.active),
+            isActive: Boolean(form.isActive),
         };
 
         if (!payload.name) return;
 
-        if (editingId) {
-            setMenu(updateMenuItem(editingId, payload));
-        } else {
-            setMenu(addMenuItem(payload));
+        try {
+            if (editingId) {
+                await updateProduct(editingId, payload, imageFile);
+            } else {
+                await createProduct(payload, imageFile);
+            }
+            await loadMenu();
+            setIsModalOpen(false);
+        } catch (err) {
+            console.error('Gagal menyimpan produk:', err);
+            setImageError(err.response?.data?.message || err.message || 'Gagal menyimpan produk.');
         }
-
-        setIsModalOpen(false);
     };
 
-    const handleDelete = (id) => {
-        if (confirm('Hapus menu ini?')) {
-            setMenu(deleteMenuItem(id));
+    const handleDelete = async (id) => {
+        if (!confirm('Hapus menu ini?')) return;
+
+        try {
+            await deleteProduct(id);
+            await loadMenu();
+        } catch (err) {
+            console.error('Gagal menghapus produk:', err);
+            alert(err.response?.data?.message || 'Gagal menghapus produk.');
         }
     };
 
@@ -188,12 +238,12 @@ const MenuManagementPage = () => {
                                 <td className="px-6 py-3.5">
                                     <span
                                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                                            item.active
+                                            item.isActive
                                                 ? 'bg-sage/15 text-sage-dark'
                                                 : 'bg-ink-soft/15 text-ink-soft'
                                         }`}
                                     >
-                                        {item.active ? 'Tersedia' : 'Nonaktif'}
+                                        {item.isActive ? 'Tersedia' : 'Nonaktif'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-3.5">
@@ -378,8 +428,8 @@ const MenuManagementPage = () => {
                             <label className="flex items-center gap-2 text-sm font-medium text-ink">
                                 <input
                                     type="checkbox"
-                                    name="active"
-                                    checked={form.active}
+                                    name="isActive"
+                                    checked={form.isActive}
                                     onChange={handleChange}
                                     className="h-4 w-4 rounded border-ink-soft/40 text-copper focus:ring-copper"
                                 />
