@@ -56,7 +56,7 @@ async function startServer() {
         await db.authenticate();
         console.log("Database MySQL berhasil terhubung");
 
-        await db.sync( {alter: true });
+        await db.sync();
         console.log("semua tabel database berhasil disinkronisasi.");
 
         const adminExist = await User.findOne({ where: { role: 'admin' } });

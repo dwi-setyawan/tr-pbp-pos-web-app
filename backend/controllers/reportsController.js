@@ -6,35 +6,23 @@ import User from "../models/User.js";
 
 export const getSalesReport = async (req, res) => {
     try {
-        const { period, kasir } = req.query;
-
         const now = new Date();
-        let year = now.getFullYear();
-        let month = now.getMonth() + 1;
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const day = now.getDate();
 
-        // Jika frontend melempar period "2026-07", pecah jadi year & month
-        if (period) {
-            const [y, m] = period.split("-");
-            if (y && m) {
-                year = parseInt(y);
-                month = parseInt(m);
-            }
-        }
-
-
-        const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
-        const end = new Date(year, month, 0, 23, 59, 59, 999);
+        const start = new Date(year, month, day, 0, 0, 0, 0);
+        const end = new Date(year, month, day, 23, 59, 59, 999);
 
         const whereCondition = {
             status: "completed",
             transactionDate: { [Op.between]: [start, end] }
         };
 
-        if (kasir) {
-            whereCondition.userId = kasir;
+        if (req.query.kasir) {
+            whereCondition.userId = req.query.kasir;
         }
 
-        // Ringkasan pendapatan
         const summary = await Transaction.findOne({
             attributes: [
                 [Sequelize.fn("COUNT", Sequelize.col("id")), "totalTransactions"],
@@ -46,7 +34,6 @@ export const getSalesReport = async (req, res) => {
         const totalTransactions = Number(summary?.dataValues?.totalTransactions) || 0;
         const totalPendapatan = Number(summary?.dataValues?.totalPendapatan) || 0;
 
-        // Total Item Terjual
         const itemsSummary = await TransactionItem.findOne({
             attributes: [
                 [Sequelize.fn("SUM", Sequelize.col("quantity")), "totalItemsSold"]
@@ -59,10 +46,8 @@ export const getSalesReport = async (req, res) => {
         });
         const totalItemsSold = Number(itemsSummary?.dataValues?.totalItemsSold) || 0;
 
-        // Rata-rata / Transaksi
         const averagePerTransaction = totalTransactions > 0 ? Math.round(totalPendapatan / totalTransactions) : 0;
 
-        // Tabel Histori Transaksi
         const transactionsHistory = await Transaction.findAll({
             where: whereCondition,
             attributes: ["id", "transactionDate", "paymentMethod", "totalAmount"],
@@ -106,7 +91,7 @@ export const getSalesReport = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: `Berhasil memuat laporan periode ${year}-${month.toString().padStart(2, '0')}`,
+            message: "Berhasil memuat laporan harian",
             data: {
                 cards: {
                     totalPendapatan,
