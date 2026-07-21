@@ -7,12 +7,8 @@ import User from "../models/User.js";
 export const getSalesReport = async (req, res) => {
     try {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const day = now.getDate();
-
-        const start = new Date(year, month, day, 0, 0, 0, 0);
-        const end = new Date(year, month, day, 23, 59, 59, 999);
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
         const whereCondition = {
             status: "completed",

@@ -113,12 +113,6 @@ const LoginPage = () => {
                             {isLoading ? 'Memproses...' : 'Masuk'}
                         </button>
                     </form>
-
-                    <div className="mt-6 rounded-lg bg-parchment px-4 py-3 font-mono text-xs leading-relaxed text-ink-soft">
-                        <p className="mb-1 font-semibold text-ink">Akun demo</p>
-                        <p>Owner — owner@kopikasir.test / owner123</p>
-                        <p>Kasir — kasir@kopikasir.test / kasir123</p>
-                    </div>
                 </div>
             </div>
         </div>

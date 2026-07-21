@@ -80,7 +80,10 @@ export const updateCashier = async (req, res) => {
     if (password === "" || password === null || password === undefined) {
         hashPassword = cashier.password; 
     } else {
-        const salt = await bcrypt.genSalt();
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password baru minimal harus 6 karakter!" });
+        }
+        const salt = await bcrypt.genSalt(10);
         hashPassword = await bcrypt.hash(password, salt);
     }
 
