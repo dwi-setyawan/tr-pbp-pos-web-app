@@ -159,7 +159,7 @@ const handleCheckout = async () => {
                     </div>
                 </div>
 
-                <div className="scrollbar-thin grid flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto pb-2 pr-1 sm:grid-cols-3 xl:grid-cols-4">
+                <div className="scrollbar-thin grid flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto p-2 pb-2 pr-1 sm:grid-cols-3 xl:grid-cols-4">
                     {visibleMenu.map((item) => {
                         const inCart = cart.find((c) => c.id === item.id)?.qty || 0;
                         const soldOut = item.stock <= 0;
