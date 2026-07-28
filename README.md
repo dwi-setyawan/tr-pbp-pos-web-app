@@ -2,7 +2,7 @@
 
 Sebuah aplikasi Point of Sale (POS) full‑stack yang dikembangkan sebagai proyek portofolio untuk
 menunjukkan kemampuan membangun sistem web dari sisi frontend, backend, dan integrasi database.
-Saya fokus pada pengembangan antarmuka yang rapi, API yang terstruktur, serta alur transaksi yang
+Kami fokus pada pengembangan antarmuka yang rapi, API yang terstruktur, serta alur transaksi yang
 mudah dipahami dan diuji.
 
 ## Anggota Tim
@@ -29,8 +29,7 @@ mudah dipahami dan diuji.
 
 - Frontend: React, Vite
 - Backend: Node.js, Express
-- Database: MySQL (via Sequelize)
-- Lainnya: Mulai pengaturan file upload, middleware autentikasi, dan REST API
+- Database: MySQL 
 
 ## Demo & Screenshot
 
