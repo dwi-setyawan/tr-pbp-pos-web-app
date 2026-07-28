@@ -5,7 +5,7 @@ import './index.css';
 import { ensureSeeded } from './lib/db';
 import App from './App';
 
-ensureSeeded();
+
 
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>

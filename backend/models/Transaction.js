@@ -1,14 +1,3 @@
-/**
- * ============================================
- * TRANSACTION MODEL
- * --------------------------------------------
- * Berisi operasi database untuk tabel
- * transaksi.
- *
- * Digunakan saat proses checkout dan
- * pembuatan laporan.
- * ============================================
- */
 
 import { DataTypes } from "sequelize";
 import db from "../config/database.js";

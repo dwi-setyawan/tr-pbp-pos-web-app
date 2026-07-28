@@ -20,9 +20,15 @@ const Product = db.define("Product", {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
         validate: {
+            notNull: {
+                msg: "Harga menu wajib diisi!"
+            },
             min: {
                 args: [1000],
                 msg: "Harga minimal adalah Rp 1.000 dan tidak boleh minus!"
+            },
+            isInt: {
+                msg: "Harga harus berupa angka bulat!"
             }
         }
     },

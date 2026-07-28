@@ -1,11 +1,3 @@
-// import api from "./api";
-
-// export const createTransaction = () => api.post("/transactions");
-// export const addItem = (transactionId, productId, quantity) =>
-//     api.post(`/transactions/${transactionId}/items`, { productId, quantity });
-// export const getTransactionById = (id) => api.get(`/transactions/${id}`);
-// export const checkout = (id, paymentMethod, amountPaid) =>
-//     api.post(`/transactions/${id}/checkout`, { paymentMethod, amountPaid });
 
 import api from './api';
 

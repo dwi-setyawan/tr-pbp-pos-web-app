@@ -123,6 +123,7 @@ const handleCheckout = async () => {
             paidAmount: amountPaid,
             changeAmount: payment === 'tunai' ? (amountPaid - total) : 0
         });
+        
         setCart([]);
         setCashGiven('');
         setPayment('tunai');
