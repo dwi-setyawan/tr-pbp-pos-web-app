@@ -1,28 +1,62 @@
 # tr-pbp-pos-web-app
 
-Aplikasi Point of Sale (POS) web dengan struktur backend dan frontend terpisah.
+Sebuah contoh aplikasi Point of Sale (POS) full‑stack untuk digunakan di portofolio.
+Proyek ini memisahkan frontend (React + Vite) dan backend (Node.js + Express) untuk
+menunjukkan kemampuan membangun aplikasi web terstruktur lengkap.
 
-## Teknologi yang Digunakan
+## Ringkasan
 
-- Frontend: React + Vite
-- Backend: Node.js + Express + MySQL + Sequelize
+- Tujuan: Demo sistem POS sederhana yang mendukung manajemen produk, transaksi,
+  laporan, dan autentikasi pengguna.
+- Cocok untuk: portofolio pengembang frontend/backend, demo teknis, dan pembelajaran.
 
-## Prasyarat
+## Fitur Utama
 
-- Node.js terinstall
-- MySQL/Laragon sudah berjalan
-- Database MySQL tersedia dengan nama `db_pos_brew`
+- Autentikasi pengguna (login/register)
+- CRUD produk termasuk upload gambar
+- Proses transaksi (tambah item, update jumlah, checkout)
+- Laporan penjualan dan ringkasan transaksi
+- Manajemen pengguna dan peran sederhana
 
-## Instalasi
+## Teknologi
 
-### 1. Backend
+- Frontend: React, Vite
+- Backend: Node.js, Express
+- Database: MySQL (via Sequelize)
+- Lainnya: Mulai pengaturan file upload, middleware autentikasi, dan REST API
+
+## Demo & Screenshot
+
+Tambahkan tautan demo atau screenshot di sini untuk memperkuat portofolio.
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+
+## Instalasi & Menjalankan (lokal)
+
+1. Jalankan backend:
 
 ```bash
 cd backend
 npm install
+npm run dev
 ```
 
-Pastikan file `backend/.env` sudah benar, terutama:
+2. Jalankan frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+3. Buka browser ke alamat yang ditunjukkan (biasanya `http://localhost:5173` untuk frontend).
+
+Catatan: Pastikan MySQL / Laragon berjalan dan file konfigurasi environment di `backend/.env`
+telah disesuaikan.
+
+Contoh `.env` minimal untuk `backend`:
 
 ```env
 PORT=5000
@@ -33,119 +67,35 @@ DB_NAME=db_pos_brew
 DB_PORT=3306
 ```
 
-Jalankan backend:
+## Struktur Proyek (ringkas)
 
-```bash
-npm run dev
-```
+- `backend/` — server API, controller, model, routes, dan folder `uploads/` untuk gambar
+- `frontend/` — kode React (komponen, halaman, layanan API)
 
-Backend akan berjalan di:
+## Endpoint Utama (contoh)
 
-```text
-http://localhost:5000
-```
+- Autentikasi: `POST /api/auth/login`, `POST /api/auth/register`
+- Produk: `GET /api/products`, `POST /api/products`, `PUT /api/products/:id`, `DELETE /api/products/:id`
+- Transaksi: `POST /api/transactions`, `POST /api/transactions/:id/items`, `POST /api/transactions/:id/checkout`
 
-### 2. Frontend
+Untuk detail endpoint, lihat file route di `backend/routes/`.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## Pengembangan & Kontribusi
 
-Frontend akan berjalan di:
+- Fork repo ini dan buat branch fitur (`feat/nama-fitur`)
+- Sertakan deskripsi perubahan dan langkah menjalankan fitur di PR
 
-```text
-http://localhost:5173
-```
+## Catatan untuk Portofolio
 
-## Cara Cek Aplikasi
+- Personalisasi README dengan: nama Anda, peran (frontend/backend/full‑stack),
+  link GitHub, email, dan link demo (jika tersedia).
+- Tambahkan screenshot atau GIF singkat yang menunjukkan alur transaksi.
 
-- Buka http://localhost:5173 untuk tampilan frontend
-- Buka http://localhost:5000 untuk mengecek API backend
+## Kontak
 
-## Struktur Folder
+- Nama: (Masukkan nama Anda)
+- Email: (Masukkan email Anda)
+- GitHub: (Masukkan profil GitHub)
 
-- `backend/` untuk server API
-- `frontend/` untuk aplikasi React
-
-## Catatan
-
-- Jika ada masalah terkait PowerShell dan npm, gunakan perintah berikut:
-
-```bash
-cmd /c npm run dev
-```
-
-====================================================== ENDPOIN TRANSAKASI
-
-### 1. **POST** `/transactions`
-
-Membuat transaksi baru dengan status **pending**.
-Menghasilkan ID transaksi yang digunakan pada proses selanjutnya.
-
-### 2. **POST** `/transactions/:id/items`
-
-Menambahkan produk pertama ke dalam transaksi.
-Menghitung subtotal dan memperbarui total transaksi.
-
-### 3. **POST** `/transactions/:id/items`
-
-Menambahkan produk lain ke transaksi yang sama.
-Total transaksi diperbarui sesuai item yang ditambahkan.
-
-### 4. **GET** `/transactions/:id`
-
-Menampilkan detail transaksi beserta seluruh item.
-Digunakan untuk memastikan total transaksi sudah benar.
-
-### 5. **PUT** `/transactions/:id/items/:itemId`
-
-Mengubah jumlah produk pada transaksi.
-Subtotal dan total transaksi dihitung ulang secara otomatis.
-
-### 6. **GET** `/transactions/:id`
-
-Menampilkan detail transaksi setelah perubahan item.
-Memastikan total transaksi telah diperbarui.
-
-### 7. **DELETE** `/transactions/:id/items/:itemId`
-
-Menghapus item tertentu dari transaksi.
-Total transaksi dihitung ulang setelah item dihapus.
-
-### 8. **GET** `/transactions/:id`
-
-Menampilkan detail transaksi setelah penghapusan item.
-Digunakan untuk memastikan total transaksi telah berkurang.
-
-### 9. **POST** `/transactions/:id/checkout`
-
-Menyelesaikan proses pembayaran transaksi.
-Mengurangi stok produk dan mengubah status menjadi **completed**.
-
-### 10. **GET** `/transactions/:id`
-
-Menampilkan data transaksi yang telah selesai.
-Memastikan nomor transaksi, status, dan kembalian sudah benar.
-
-### 11. **Cek Database (phpMyAdmin)**
-
-Memastikan stok produk telah berkurang setelah checkout.
-Memverifikasi data pada tabel sesuai hasil transaksi.
-
-### 12. **POST** `/transactions`
-
-Membuat transaksi baru untuk pengujian pembatalan.
-Status awal transaksi adalah **pending**.
-
-### 13 **DELETE** `/transactions/:id`
-
-Membatakan transaksi yang masih berstatus **pending**.
-Transaksi yang dibatalkan tidak mengurangi stok produk.
-
-### 14. **GET** `/transactions`
-
-Menampilkan seluruh riwayat transaksi yang tersimpan.
-Memastikan transaksi **completed** dan **cancelled** telah tercatat.
-========================================================================
+Jika Anda ingin, saya bisa menambahkan screenshot, menulis ringkasan singkat profil
+Anda di bagian atas, atau menyertakan instruksi setup database lebih rinci.

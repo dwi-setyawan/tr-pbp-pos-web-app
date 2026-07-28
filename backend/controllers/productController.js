@@ -69,7 +69,7 @@ export const createProduct = async (req, res) => {
             stock: stock,
             category: category,
             image: imageName,
-            isActive: true 
+            isActive: true
         });
 
         res.status(201).json({
