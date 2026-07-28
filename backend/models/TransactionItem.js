@@ -1,4 +1,3 @@
-
 import { DataTypes } from "sequelize";
 import db from "../config/database.js";
 import Product from "./Product.js";
