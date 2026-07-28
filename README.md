@@ -1,8 +1,15 @@
 # tr-pbp-pos-web-app
 
-Sebuah contoh aplikasi Point of Sale (POS) full‑stack untuk digunakan di portofolio.
-Proyek ini memisahkan frontend (React + Vite) dan backend (Node.js + Express) untuk
-menunjukkan kemampuan membangun aplikasi web terstruktur lengkap.
+Sebuah aplikasi Point of Sale (POS) full‑stack yang dikembangkan sebagai proyek portofolio untuk
+menunjukkan kemampuan membangun sistem web dari sisi frontend, backend, dan integrasi database.
+Saya fokus pada pengembangan antarmuka yang rapi, API yang terstruktur, serta alur transaksi yang
+mudah dipahami dan diuji.
+
+## Anggota Tim
+
+- Aliffia Anggun Putri Rosadi — GitHub: @Aliffiaapr
+- Edward J Pranyoto — GitHub: @Edward1733
+- Dwi Setyawan — GitHub: @dwi-setyawan
 
 ## Ringkasan
 
@@ -27,7 +34,6 @@ menunjukkan kemampuan membangun aplikasi web terstruktur lengkap.
 
 ## Demo & Screenshot
 
-Tambahkan tautan demo atau screenshot di sini untuk memperkuat portofolio.
 ![alt text](image.png)
 ![alt text](image-1.png)
 ![alt text](image-2.png)
@@ -51,12 +57,22 @@ npm install
 npm run dev
 ```
 
-3. Buka browser ke alamat yang ditunjukkan (biasanya `http://localhost:5173` untuk frontend).
+3. Buka browser ke alamat yang ditunjukkan ( `http://localhost:5173` ).
 
 Catatan: Pastikan MySQL / Laragon berjalan dan file konfigurasi environment di `backend/.env`
 telah disesuaikan.
 
-Contoh `.env` minimal untuk `backend`:
+### Setup Database MySQL secara rinci
+
+1. Buka Laragon, pastikan MySQL sudah aktif.
+2. Masuk ke phpMyAdmin atau client MySQL Anda.
+3. Buat database baru dengan nama:
+
+```sql
+CREATE DATABASE db_pos_brew;
+```
+
+4. Pastikan user database memiliki akses yang cukup. Untuk konfigurasi lokal default, biasanya:
 
 ```env
 PORT=5000
@@ -66,6 +82,18 @@ DB_PASSWORD=
 DB_NAME=db_pos_brew
 DB_PORT=3306
 ```
+
+5. Jalankan backend, lalu Sequelize akan otomatis membuat tabel yang dibutuhkan.
+6. Jika database tidak terhubung, cek apakah port MySQL yang dipakai adalah `3306` atau `3307`.
+   Sesuaikan nilai `DB_PORT` pada file `backend/.env` jika perlu.
+
+7. Untuk memastikan koneksi berhasil, Anda bisa cek log terminal backend. Jika muncul pesan:
+
+```text
+Database MySQL berhasil terhubung
+```
+
+maka koneksi database sudah berjalan dengan baik.
 
 ## Struktur Proyek (ringkas)
 
@@ -84,18 +112,3 @@ Untuk detail endpoint, lihat file route di `backend/routes/`.
 
 - Fork repo ini dan buat branch fitur (`feat/nama-fitur`)
 - Sertakan deskripsi perubahan dan langkah menjalankan fitur di PR
-
-## Catatan untuk Portofolio
-
-- Personalisasi README dengan: nama Anda, peran (frontend/backend/full‑stack),
-  link GitHub, email, dan link demo (jika tersedia).
-- Tambahkan screenshot atau GIF singkat yang menunjukkan alur transaksi.
-
-## Kontak
-
-- Nama: (Masukkan nama Anda)
-- Email: (Masukkan email Anda)
-- GitHub: (Masukkan profil GitHub)
-
-Jika Anda ingin, saya bisa menambahkan screenshot, menulis ringkasan singkat profil
-Anda di bagian atas, atau menyertakan instruksi setup database lebih rinci.
